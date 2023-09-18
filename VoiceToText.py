@@ -355,10 +355,10 @@ else:
 
 
 # Run on GPU with FP16
-whisper_model = WhisperModel(whisper_model_name, device="cuda", compute_type="float16")
+whisper_model = WhisperModel(whisper_model_name, device="cpu", compute_type="float32")
 
 # or run on GPU with INT8
-# model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
+# model = WhisperModel(model_size, device="cpu", compute_type="int8_float16")
 # or run on CPU with INT8
 # model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
@@ -370,11 +370,11 @@ for segment in segments:
     whisper_results.append(segment._asdict())
 # clear gpu vram
 del whisper_model
-torch.cuda.empty_cache()
+torch.cpu.empty_cache()
 
 
 if info.language in wav2vec2_langs:
-    device = "cuda"
+    device = "cpu"
     alignment_model, metadata = whisperx.load_align_model(
         language_code=info.language, device=device
     )
@@ -384,7 +384,7 @@ if info.language in wav2vec2_langs:
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
     del alignment_model
-    torch.cuda.empty_cache()
+    torch.cpu.empty_cache()
 else:
     word_timestamps = []
     for segment in whisper_results:
@@ -400,11 +400,11 @@ soundfile.write(os.path.join(temp_path, "mono_file.wav"), signal, sample_rate, "
 
 
 # Initialize NeMo MSDD diarization model
-msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to("cuda")
+msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to("cpu")
 msdd_model.diarize()
 
 del msdd_model
-torch.cuda.empty_cache()
+torch.cpu.empty_cache()
 
 
 # Reading timestamps <> Speaker Labels mapping
