@@ -321,7 +321,7 @@ def cleanup(path: str):
     ###########################################
 
     # Name of the audio file
-audio_path = '/content/dr-madeeha-aimen_hHmY4qOF.mp3'
+audio_path = 'dr-madeeha-aimen_hHmY4qOF.mp3'
 
 ############################################################
 
@@ -370,7 +370,6 @@ for segment in segments:
     whisper_results.append(segment._asdict())
 # clear gpu vram
 del whisper_model
-torch.cpu.empty_cache()
 
 
 if info.language in wav2vec2_langs:
@@ -384,7 +383,6 @@ if info.language in wav2vec2_langs:
     word_timestamps = result_aligned["word_segments"]
     # clear gpu vram
     del alignment_model
-    torch.cpu.empty_cache()
 else:
     word_timestamps = []
     for segment in whisper_results:
@@ -404,7 +402,6 @@ msdd_model = NeuralDiarizer(cfg=create_config(temp_path)).to("cpu")
 msdd_model.diarize()
 
 del msdd_model
-torch.cpu.empty_cache()
 
 
 # Reading timestamps <> Speaker Labels mapping
@@ -463,5 +460,13 @@ with open(f"{audio_path[:-4]}.txt", "w", encoding="utf-8-sig") as f:
 
 with open(f"{audio_path[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
     write_srt(ssm, srt)
+
+formatted_output = ""
+for record in ssm:
+    speaker = record['speaker']
+    text = record['text'].replace(", ", ", ").replace(". ", ". ").replace(" ,", ",").replace(" .", ".")
+    formatted_output += f"{speaker}: {text}\n\n---------------------\n"
+
+print(formatted_output)
 
 cleanup(temp_path)

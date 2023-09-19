@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio and PDF Transcription</title>
+    <title>Audio Transcription</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
@@ -72,11 +72,11 @@
     </div>
 
     <script>
-
         document.getElementById('record-button').addEventListener('click', function() {
             var button = this;
-
+    
             if (button.textContent === 'Start Recording') {
+                console.log('Recording started');
                 button.textContent = 'Stop Recording';
                 button.classList.add('recording'); // Add the recording class to change the color to green
                 navigator.mediaDevices.getUserMedia({ audio: true })
@@ -89,18 +89,22 @@
                         };
                         mediaRecorder.start();
                         button.addEventListener('click', function stopRecording() {
+                            console.log('Recording stopped');
                             mediaRecorder.stop();
                             stream.getTracks().forEach(track => track.stop());
                             button.removeEventListener('click', stopRecording);
                             button.textContent = 'Start Recording';
                             button.classList.remove('recording'); // Remove the recording class to revert the color
                         }, { once: true });
+                    })
+                    .catch(error => {
+                        console.error('Error accessing the microphone', error);
                     });
             }
         });
-
-
+    
         function sendAudioToServer(audioData) {
+            console.log('Sending audio data to the server');
             var formData = new FormData();
             var blob = new Blob([audioData], { 'type': 'audio/wav' }); // Change type if necessary
             formData.append('audio', blob, 'audio.wav');
@@ -111,16 +115,17 @@
                 processData: false,
                 contentType: false,
                 success: function(result) {
+                    console.log('Transcription success', result);
                     $('#transcription').text(result.transcription);
                     $('#audio-player').attr('src', result.audio_url); // Add the audio player
                 },
                 error: function(error) {
+                    console.error('Transcription error', error);
                     $('#transcription').text('Error: ' + error.responseJSON.error);
                 }
             });
         }
-
-
     </script>
+    
 </body>
 </html>
