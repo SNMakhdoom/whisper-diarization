@@ -6,62 +6,69 @@
     <title>Audio and PDF Transcription</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body, html {
             height: 100%;
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(45deg, #00c9ff, #92fe9d);
+            color: #fff;
         }
         .container {
             max-height: 100%;
-            overflow: auto; /* Scroll inside container if needed */
+            overflow: auto;
+            padding: 50px;
+            border-radius: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: box-shadow 0.3s;
+        }
+        .container:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         #pdf-viewer, #pdf-result {
-            height: 300px; /* You can adjust this */
+            height: 300px;
         }
-        #record-button.recording {
-            background-color: green;
+        #record-button {
+            background-color: #007bff;
+            border: none;
+            transition: background-color 0.3s, border-color 0.3s;
             color: white;
         }
+        #record-button:hover, #record-button:focus {
+            background-color: #0056b3;
+            border-color: #00408a;
+        }
+        #record-button.recording {
+            background-color: #28a745;
+        }
+        #record-button.recording:hover, #record-button.recording:focus {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
         #audio-player {
-            width: 40%;
+            width: 100%;
             margin: 0px auto;
             display: block;
         }
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-            transition: background-color 0.2s;
+        h1 {
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
-        .btn-primary:hover {
-            background-color: #0056b3;
+        p {
+            font-size: 1.2em;
         }
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-center mt-4">Transcribe Audio</h1>
+        <h1>Transcribe Audio</h1>
         <button id="record-button" class="btn btn-primary mb-4">Start Recording</button>
         <audio id="audio-player" controls></audio>
         <p id="transcription" style="white-space: pre-line;"></p>
-        <h1 class="text-center mt-4">Translate PDF</h1>
-        <div class="form-group">
-            <input type="file" id="pdf-file" accept="application/pdf" class="form-control">
-        </div>
-        <button onclick="pdfToText()" class="btn btn-primary mb-4">Translate</button>
-        <div class="row">
-            <div class="col-md-6">
-                <object id="pdf-viewer" data="" type="application/pdf" style="width: 100%; height: 500px;" aria-labelledby="pdf-label">
-                    <embed src="" type="application/pdf">
-                        <p id="pdf-label">Your browser does not support PDFs. Please <a href="" id="pdf-download-link">download the PDF</a> to view it.</p>
-                    </embed>
-                </object>
-            </div>
-            <div class="col-md-6">
-                <p id="pdf-result" style="white-space: pre-line;"></p>
-            </div>
-        </div>
+        
     </div>
 
     <script>

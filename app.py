@@ -24,7 +24,7 @@ def index():
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     try:
-        audio_dir = '/home/ubuntu/ML_Projects/whisper-diarization/recording'
+        audio_dir = ' /home/ubuntu/VoiceToText/whisper-diarization/recording'
         if not os.path.exists(audio_dir):
             os.makedirs(audio_dir)
 
@@ -342,7 +342,7 @@ def transcribe_audio():
             ###########################################
 
             # Name of the audio file
-        audio_path = '/content/dr-madeeha-aimen_hHmY4qOF.mp3'
+        audio_path = audio_wav_path
 
         ############################################################
 
@@ -391,7 +391,7 @@ def transcribe_audio():
             whisper_results.append(segment._asdict())
         # clear gpu vram
         del whisper_model
-        torch.cpu.empty_cache()
+         
 
 
         if info.language in wav2vec2_langs:
@@ -405,7 +405,7 @@ def transcribe_audio():
             word_timestamps = result_aligned["word_segments"]
             # clear gpu vram
             del alignment_model
-            torch.cpu.empty_cache()
+             
         else:
             word_timestamps = []
             for segment in whisper_results:
@@ -425,7 +425,7 @@ def transcribe_audio():
         msdd_model.diarize()
 
         del msdd_model
-        torch.cpu.empty_cache()
+         
 
 
         # Reading timestamps <> Speaker Labels mapping
@@ -484,6 +484,15 @@ def transcribe_audio():
 
         with open(f"{audio_path[:-4]}.srt", "w", encoding="utf-8-sig") as srt:
             write_srt(ssm, srt)
+        
+        formatted_output = ""
+        for record in ssm:
+            speaker = record['speaker']
+            text = record['text'].replace(", ", ", ").replace(". ", ". ").replace(" ,", ",").replace(" .", ".")
+            formatted_output += f"{speaker}: {text}\n\n---------------------\n"
+
+        
+        print("Transcript saved as text and srt files. ", formatted_output)
 
         cleanup(temp_path)
 
@@ -494,14 +503,14 @@ def transcribe_audio():
 
         audio_url = f"/get_audio/{os.path.basename(audio_wav_path)}"
 
-        return jsonify({'transcription': ssm, 'audio_url': audio_url})
+        return jsonify({'transcription': formatted_output, 'audio_url': audio_url})
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 400
 
 @app.route('/get_audio/<filename>')
 def get_audio(filename):
-    audio_dir = '/home/ubuntu/ML_Projects/whisper-diarization/recording'
+    audio_dir = ' /home/ubuntu/VoiceToText/whisper-diarization/recording'
     return send_from_directory(audio_dir, filename)
 
 
