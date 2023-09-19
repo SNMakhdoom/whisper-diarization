@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio and PDF Transcription</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-height: 100%;
+            overflow: auto; /* Scroll inside container if needed */
+        }
+        #pdf-viewer, #pdf-result {
+            height: 300px; /* You can adjust this */
+        }
+        #record-button.recording {
+            background-color: green;
+            color: white;
+        }
+        #audio-player {
+            width: 40%;
+            margin: 0px auto;
+            display: block;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-4">Transcribe Audio</h1>
+        <button id="record-button" class="btn btn-primary mb-4">Start Recording</button>
+        <audio id="audio-player" controls></audio>
+        <p id="transcription" style="white-space: pre-line;"></p>
+        <h1 class="text-center mt-4">Translate PDF</h1>
+        <div class="form-group">
+            <input type="file" id="pdf-file" accept="application/pdf" class="form-control">
+        </div>
+        <button onclick="pdfToText()" class="btn btn-primary mb-4">Translate</button>
+        <div class="row">
+            <div class="col-md-6">
+                <object id="pdf-viewer" data="" type="application/pdf" style="width: 100%; height: 500px;" aria-labelledby="pdf-label">
+                    <embed src="" type="application/pdf">
+                        <p id="pdf-label">Your browser does not support PDFs. Please <a href="" id="pdf-download-link">download the PDF</a> to view it.</p>
+                    </embed>
+                </object>
+            </div>
+            <div class="col-md-6">
+                <p id="pdf-result" style="white-space: pre-line;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        document.getElementById('record-button').addEventListener('click', function() {
+            var button = this;
+
+            if (button.textContent === 'Start Recording') {
+                button.textContent = 'Stop Recording';
+                button.classList.add('recording'); // Add the recording class to change the color to green
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        var mediaRecorder = new MediaRecorder(stream);
+                        mediaRecorder.ondataavailable = function(event) {
+                            if (event.data.size > 0) {
+                                sendAudioToServer(event.data);
+                            }
+                        };
+                        mediaRecorder.start();
+                        button.addEventListener('click', function stopRecording() {
+                            mediaRecorder.stop();
+                            stream.getTracks().forEach(track => track.stop());
+                            button.removeEventListener('click', stopRecording);
+                            button.textContent = 'Start Recording';
+                            button.classList.remove('recording'); // Remove the recording class to revert the color
+                        }, { once: true });
+                    });
+            }
+        });
+
+
+        function sendAudioToServer(audioData) {
+            var formData = new FormData();
+            var blob = new Blob([audioData], { 'type': 'audio/wav' }); // Change type if necessary
+            formData.append('audio', blob, 'audio.wav');
+            $.ajax({
+                url: '/transcribe',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(result) {
+                    $('#transcription').text(result.transcription);
+                    $('#audio-player').attr('src', result.audio_url); // Add the audio player
+                },
+                error: function(error) {
+                    $('#transcription').text('Error: ' + error.responseJSON.error);
+                }
+            });
+        }
+
+
+    </script>
+</body>
+</html>
