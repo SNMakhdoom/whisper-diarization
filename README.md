@@ -1,5 +1,7 @@
 # Speech Processing Pipeline for Diarization and Punctuation Restoration
 
+![Pipeline Image](img.png)
+
 This GitHub repository contains a comprehensive speech processing pipeline for diarization and punctuation restoration. It leverages state-of-the-art AI models and cloud infrastructure to provide accurate results for audio data.
 
 ## Key Features
